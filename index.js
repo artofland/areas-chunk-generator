@@ -1,10 +1,19 @@
-const fs = require('fs');
+const { readFileSync, writeFileSync } = require('fs');
 
 const CHUNK_LENGTH = 64;
 const CHUNK_HEIGHT = 256; // Index of the highest block
 
 // Read minetest config file and get `mapgen_limit` value
-const config = fs.readFileSync('../minetest-server/minetest.conf', 'utf8');
+let config;
+
+try {
+    config = readFileSync('../minetest-server/minetest.conf', 'utf8');
+}
+catch (e) {
+    console.error('Error: Could not read config file:', e.message);
+    process.exit(1);
+}
+
 const mapgenLimit = config.match(/mapgen_limit\s*=\s*(\d+)/)?.[1];
 
 if (!mapgenLimit) {
@@ -42,6 +51,12 @@ for (let x = min; x < max; x += CHUNK_LENGTH) {
     }
 }
 
-fs.writeFileSync('../minetest-server/data/worlds/world/areas.dat', JSON.stringify(areas));
+try {
+    writeFileSync('../minetest-server/data/worlds/world/areas.dat', JSON.stringify(areas));
+}
+catch (e) {
+    console.error('Error: Could not write file:', e.message);
+    process.exit(1);
+}
 
-console.log(`Generated ${areas.length} areas of size ${CHUNK_LENGTH} x ${CHUNK_LENGTH} in a ${mapgenLimit} x ${mapgenLimit} map`);
+console.log(`Generated ${areas.length} areas of size ${CHUNK_LENGTH} x ${CHUNK_LENGTH} in a ${mapgenLimit} x ${mapgenLimit} map.`);
